@@ -140,8 +140,6 @@ class Tape:
                 return
     
     def run():
-        for func in Function.functions:
-            print(func.index)
         Tape.print_tape()
         try:
             while Tape.run_flag:
