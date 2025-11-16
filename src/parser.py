@@ -1,4 +1,4 @@
-from functions import *
+from src.functions import *
 import re
 from pathlib import Path
 
@@ -13,7 +13,10 @@ def Parse(file_name):
         raise IOError(f"File not found: {file_name}")
     
     # Читаем, получаем сыроежку
-    raw = path.read_text(encoding='utf-8')
+    try:
+        raw = path.read_text(encoding='utf-8')
+    except:
+        raise PermissionError("Permission denied. Maybe your machine's name has been lost from the cache.\nTry writing 'python main.py choose' and selecting your machine again.")
 
     # Удаляем коментарии
     raw = re.sub(r'".*?"|\'.*?\'', '', raw)
