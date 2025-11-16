@@ -1,11 +1,11 @@
-from parser import Parse
-from functions import Tape
+from src.parser import Parse
+from src.functions import Tape
 import sys
 import json
 import argparse
 
 try:
-    with open("cache.json", "r", encoding="utf-8") as file:
+    with open("cache\\cache.json", "r", encoding="utf-8") as file:
         cache = json.load(file)
 except:
     cache = {'choosen_machine' : '',
@@ -28,12 +28,12 @@ args = parser.parse_args()
 match args.command:
     case 'choose':
         cache['choosen_machine'] = input('Enter file name: ')
-        with open('cache.json', 'w+') as f:
+        with open('cache\\cache.json', 'w+') as f:
             json.dump(cache, f, indent=4)
         print(f'Succesful! You are choose your machine: {cache['choosen_machine']}')
     case 'load':
         cache['choosen_tape'] = input('Enter file name: ')
-        with open('cache.json', 'w+') as f:
+        with open('cache\\cache.json', 'w+') as f:
             json.dump(cache, f, indent=4)
         print(f'Succesful! You are choose tape: {cache['choosen_tape']}')
     case 'run':
