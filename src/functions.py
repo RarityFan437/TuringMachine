@@ -41,6 +41,8 @@ class Instruction:
             case '§':
                 Tape.printer()
             case _:
+                if function.get_function_by_name(self.jump.function) is None:
+                    raise NameError(f"Unknown function reference '{self.jump.function}' in function '{Tape.current_function}'")
                 Tape.current_function = Function.get_function_by_name(self.jump.function)
                 if not self.jump.marking is None:
                     Function.get_function_by_name(self.jump.marking).mark = Tape.cursor
