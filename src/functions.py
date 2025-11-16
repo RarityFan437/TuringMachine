@@ -34,14 +34,13 @@ class Instruction:
         Tape.set_char(self.get_value())
 
         # Переходим к другой функции и маркируем ячейку
-        print(Function.get_function_by_name('g23'))
         match self.jump.function:
             case '#':
                 Tape.run_flag = False
             case '§':
                 Tape.printer()
             case _:
-                if function.get_function_by_name(self.jump.function) is None:
+                if Function.get_function_by_name(self.jump.function) is None:
                     raise NameError(f"Unknown function reference '{self.jump.function}' in function '{Tape.current_function}'")
                 Tape.current_function = Function.get_function_by_name(self.jump.function)
                 if not self.jump.marking is None:
@@ -141,7 +140,6 @@ class Tape:
                 return
     
     def run():
-        print(Function.functions)
         for func in Function.functions:
             print(func.index)
         Tape.print_tape()
