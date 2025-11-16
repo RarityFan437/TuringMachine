@@ -167,9 +167,13 @@ class Tape:
     def printer():
         output = ''
         text = Tape.tape.strip('x').split('x')
-        for i in range(len(text)):
-            text[i] = int(text[i], 2)
-        for num in text:
+        binaries = []
+        for char in text:
+            if all(c in '01' for c in char):
+                binaries.append(char)
+        for i in range(len(binaries)):
+            binaries[i] = int(binaries[i], 2)
+        for num in binaries:
             output += Tape.char_table[num]
         Tape.run_flag = False
         print(output)
