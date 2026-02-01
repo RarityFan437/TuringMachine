@@ -5,6 +5,7 @@ from enum import Enum
 import os
 import random
 
+
 # Сдвиги
 class Shift(Enum):
     LEFT = '<'
@@ -119,6 +120,7 @@ class Tape:
     run_flag = True
     char_table = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*=+-_?/;:.,<>~ '
     width = min(os.get_terminal_size().columns - 5, config.fov)
+    printer_string = ''
 
     start = 0
     end = width
@@ -166,6 +168,9 @@ class Tape:
                 return
     
     def run():
+        print()
+        print()
+        print()
         Tape.print_tape()
         try:
             while Tape.run_flag:
@@ -173,11 +178,23 @@ class Tape:
                 Tape.current_function(Tape.tape[Tape.cursor])
                 Tape.print_tape()
                 time.sleep(Tape.pause_time/2)
-            print(Tape.tape.strip('x'))
+            Tape.cls()
+            if Tape.printer_string != "":
+                print(Tape.printer_string)
+            else:
+                print(Tape.tape.strip('x'))
             Tape.reset()
         except KeyboardInterrupt:  
             print(Tape.tape.strip('x'))
             Tape.reset()
+    
+    def cls():
+        sys.stdout.write('\033[F')
+        sys.stdout.write('\033[K')  
+        sys.stdout.write('\033[F')
+        sys.stdout.write('\033[K')
+        sys.stdout.write('\033[F')
+        sys.stdout.write('\033[K')
     
     def print_tape():
         Tape.cursor_pos = Tape.cursor - Tape.start
@@ -188,17 +205,10 @@ class Tape:
             Tape.start = max(0, Tape.start + 1)
             Tape.end = min(len(Tape.tape)-1, Tape.end + 1)
         visible_tape = Tape.tape[Tape.start:Tape.end]
-            
-        
-        sys.stdout.write('\033[F')
-        sys.stdout.write('\033[K')  
-        sys.stdout.write('\033[F')
-        sys.stdout.write('\033[K')
-        sys.stdout.write('\033[F')
-        sys.stdout.write('\033[K')
-        # print(Tape.tape + f'\n' + ' '*Tape.cursor + '^' + '\nPress Ctrl+C to stop.')
+
+        Tape.cls()
         print(visible_tape + f'\n' + ' '*Tape.cursor_pos + '^' + f'\nPress Ctrl+C to stop.')
-    
+
     def printer():
         output = ''
         text = Tape.tape.strip('x').split('x')
@@ -211,4 +221,4 @@ class Tape:
         for num in binaries:
             output += Tape.char_table[num]
         Tape.run_flag = False
-        print(output)
+        Tape.printer_string = output

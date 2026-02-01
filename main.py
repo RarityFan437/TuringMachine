@@ -1,6 +1,7 @@
-from src.parser import Parse
-from src.functions import Tape
+import src.parser
+import src.functions
 import os
+import importlib
 import json
 from lib.colorama import Fore, init
 
@@ -15,16 +16,18 @@ except:
     cache = {'choosen_machine' : 'None'}
 
 def run(tape):
+    importlib.reload(src.functions)
+    importlib.reload(src.parser)
     if cache['choosen_machine'] == 'None':
         print(Fore.YELLOW + "No machine selected. Use 'choose' command first.")
         return
     try:
-        r = Parse(cache['choosen_machine'])
+        r = src.parser.Parse(cache['choosen_machine'])
         if r != None:
             print(r)
         else:
-            Tape.tape = 'x' + tape + 'x'
-            Tape.run()
+            src.functions.Tape.tape = 'x' + tape + 'x'
+            src.functions.Tape.run()
     except Exception as e:
             print(Fore.RED + f"{e}")
         
