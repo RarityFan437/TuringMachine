@@ -2,6 +2,8 @@ import time
 import sys
 import config
 from enum import Enum
+import os
+import random
 
 # Сдвиги
 class Shift(Enum):
@@ -24,6 +26,8 @@ class Instruction:
     
     def get_value(self):
         match self.value:
+            case '?':
+                return random.choice(["0", "1", "x"])
             case '!':
                 return Tape.tape[Tape.current_function.mark]
             case _:
@@ -113,7 +117,25 @@ class Tape:
     tape = ''
     pause_time = config.pause_time
     run_flag = True
-    char_table = ' 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*=+-_?/;:.,<>~'
+    char_table = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*=+-_?/;:.,<>~ '
+    width = min(os.get_terminal_size().columns - 5, config.fov)
+
+    start = 0
+    end = width
+    cursor_pos = 1
+
+    def reset():
+        Tape.current_function = None
+        Tape.cursor = 1
+        Tape.tape = ''
+        Tape.pause_time = config.pause_time
+        Tape.run_flag = True
+        Tape.char_table = ' 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*=+-_?/;:.,<>~'
+        Tape.width = 60
+
+        Tape.start = 0
+        Tape.end = Tape.width
+        Tape.cursor_pos = 1
 
     def get_char():
         return Tape.tape[Tape.cursor]
@@ -131,12 +153,16 @@ class Tape:
                 if Tape.cursor == 0:
                     Tape.tape = 'x' + Tape.tape
                     Tape.cursor = 1
+                    Tape.start = 0
+                    Tape.end = Tape.width
                     Function.increment_marks()
                 return
             case Shift.RIGHT:
                 Tape.cursor += 1
                 if Tape.cursor == len(Tape.tape)-1:
                     Tape.tape = Tape.tape + 'x'
+                    Tape.start = len(Tape.tape) - Tape.width
+                    Tape.end = len(Tape.tape)
                 return
     
     def run():
@@ -148,17 +174,30 @@ class Tape:
                 Tape.print_tape()
                 time.sleep(Tape.pause_time/2)
             print(Tape.tape.strip('x'))
+            Tape.reset()
         except KeyboardInterrupt:  
             print(Tape.tape.strip('x'))
+            Tape.reset()
     
     def print_tape():
-        print(Tape.tape + f'\n' + ' '*Tape.cursor + '^' + '\nPress Ctrl+C to stop.')
+        Tape.cursor_pos = Tape.cursor - Tape.start
+        if Tape.cursor_pos == 1 and Tape.cursor != 1:
+            Tape.start = max(0, Tape.start - 1)
+            Tape.end = min(len(Tape.tape)-1, Tape.end - 1)
+        if Tape.cursor_pos == Tape.width - 2 and Tape.cursor != len(Tape.tape) - 1:
+            Tape.start = max(0, Tape.start + 1)
+            Tape.end = min(len(Tape.tape)-1, Tape.end + 1)
+        visible_tape = Tape.tape[Tape.start:Tape.end]
+            
+        
         sys.stdout.write('\033[F')
         sys.stdout.write('\033[K')  
         sys.stdout.write('\033[F')
         sys.stdout.write('\033[K')
         sys.stdout.write('\033[F')
         sys.stdout.write('\033[K')
+        # print(Tape.tape + f'\n' + ' '*Tape.cursor + '^' + '\nPress Ctrl+C to stop.')
+        print(visible_tape + f'\n' + ' '*Tape.cursor_pos + '^' + f'\nPress Ctrl+C to stop.')
     
     def printer():
         output = ''

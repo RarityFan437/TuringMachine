@@ -1,2 +1,3 @@
-pause_time = 0.02 #in seconds
+pause_time = 0.1 #in seconds
+fov = 120
 

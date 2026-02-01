@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 def Parse(file_name):
-    chars_list = ['0', '1', 'x', '!']
+    chars_list = ['0', '1', 'x', '!', '?']
     shift_list = ['>', '<', '~']
     invalid_name_chars = '!~@#./?<>(){}[]'
 
