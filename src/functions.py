@@ -207,7 +207,7 @@ class Tape:
         visible_tape = Tape.tape[Tape.start:Tape.end]
 
         Tape.cls()
-        print(visible_tape + f'\n' + ' '*Tape.cursor_pos + '^' + f'\nPress Ctrl+C to stop.')
+        print(visible_tape + f'\n' + ' '*Tape.cursor_pos + '^' + f'\nPress Ctrl+C to stop. Pos: {Tape.cursor} Function: {Tape.current_function.index}')
 
     def printer():
         output = ''
