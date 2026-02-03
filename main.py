@@ -1,46 +1,60 @@
-import src.parser
-import src.functions
+"""
+Главный скрипт.
+"""
+import json
 import os
 import importlib
-import json
+
 from lib.colorama import Fore, init
+import src.parser
+import src.functions
+
+
+
 
 CACHE_PATH = 'cache'
+cache = {}
 
 init(autoreset=True)
 
 try:
     with open("cache\\cache.json", "r", encoding="utf-8") as file:
         cache = json.load(file)
-except:
+except FileNotFoundError:
     cache = {'choosen_machine' : 'None'}
 
+
 def run(tape):
+    """
+    Запускает Парсинг кода, а потом запускает машину.
+    """
     importlib.reload(src.functions)
     importlib.reload(src.parser)
     if cache['choosen_machine'] == 'None':
         print(Fore.YELLOW + "No machine selected. Use 'choose' command first.")
         return
     try:
-        r = src.parser.Parse(cache['choosen_machine'])
-        if r != None:
-            print(r)
-        else:
-            src.functions.Tape.tape = 'x' + tape + 'x'
-            src.functions.Tape.run()
+        src.parser.Parse(cache['choosen_machine'])
+        src.functions.Tape.tape = 'x' + tape + 'x'
+        src.functions.Tape.run()
     except Exception as e:
             print(Fore.RED + f"{e}")
         
 
 def save():
-    global cache
+    """
+    Сохраняет кэш в файл.
+    """
+    
     if not os.path.exists(CACHE_PATH):
         os.makedirs(CACHE_PATH, exist_ok=True)
-    with open('cache\\cache.json', 'w+') as f:
+    with open('cache\\cache.json', 'w+', encoding="UTF-8") as f:
         json.dump(cache, f, indent=4)
 
 def start():
-    global cache
+    """
+    Стартует кастомную консоль.
+    """
     while True:
         command_raw = input(">> ")
         commands = command_raw.split(" ")

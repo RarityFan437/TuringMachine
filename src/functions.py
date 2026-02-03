@@ -1,31 +1,42 @@
+"""Сам интерпретатор."""
 import time
 import sys
-import config
-from enum import Enum
 import os
 import random
+from enum import Enum
+import config
 
 
 # Сдвиги
 class Shift(Enum):
+    """
+    Таблица возможных шифтов.
+    """
     LEFT = '<'
     RIGHT = '>'
     STAY = '~'
 
 # Функция к которой перейти, функция которую пометить
 class Jump:
+    """Класс прыжка содержит информацию о второй команде триплета."""
     def __init__(self, function: 'Function', marking: 'Function'=None):
         self.function = function
         self.marking = marking
 
 # Триплет, который выполняет машина
 class Instruction:
+    """
+    Триплет.
+    """
     def __init__(self, value: str, jump: 'Jump', shift: 'Shift'):
         self.value = value
         self.jump = jump
         self.shift = shift
     
     def get_value(self):
+        """
+        возвращает значение которое должна поставить функция в ячейку.
+        """
         match self.value:
             case '?':
                 return random.choice(["0", "1", "x"])
@@ -56,6 +67,9 @@ class Instruction:
 
 # Список инструкций функции
 class InstructionSet:
+    """
+    три триплета.
+    """
     def __init__(self, zero: 'Instruction', one: 'Instruction', x: 'Instruction'):
         self.zero = zero
         self.one = one
@@ -63,12 +77,15 @@ class InstructionSet:
 
 # Функция АКА правила по которым работает машина
 class Function:
+    """
+    Класс функции, содержит: индекс, триплеты и флаг маркировки.
+    """
     functions = []
     bases = '#§'
     def __init__(self, index: str, default: 'InstructionSet', marked: 'InstructionSet'=None):
         self.index = index
         self.default = default
-        if marked != None:
+        if marked is not None:
             self.marked = marked
         else:
             self.marked = default
@@ -76,15 +93,21 @@ class Function:
 
         Function.functions.append(self)
     
-    # Возвращает функцию по имени, если такое нет возвращает
+    @staticmethod
     def get_function_by_name(index):
+        """
+        возвращает функцию по индексу.
+        """
         for func in Function.functions:
             if func.index == index:
-                    return func
+                return func
         return None
 
-    # увеличить значение марок всех функций на 1
+    @staticmethod
     def increment_marks():
+        """
+        увеличивает значение марок всех функций на 1
+        """
         for func in Function.functions:
             func.mark += 1
 
@@ -113,7 +136,10 @@ class Function:
                             self.default.x()
 
 class Tape:
-    current_function = None
+    """
+    Класс ленты
+    """
+    current_function: Function
     cursor = 1
     tape = ''
     pause_time = config.pause_time
@@ -126,27 +152,26 @@ class Tape:
     end = width
     cursor_pos = 1
 
-    def reset():
-        Tape.current_function = None
-        Tape.cursor = 1
-        Tape.tape = ''
-        Tape.pause_time = config.pause_time
-        Tape.run_flag = True
-        Tape.char_table = ' 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*=+-_?/;:.,<>~'
-        Tape.width = 60
-
-        Tape.start = 0
-        Tape.end = Tape.width
-        Tape.cursor_pos = 1
-
+    @staticmethod
     def get_char():
+        """
+        Возвращает значение текущей ячейки.
+        """
         return Tape.tape[Tape.cursor]
 
+    @staticmethod
     def set_char(value):
+        """
+        Устанавливает значение текущей ячейке.
+        """
         Tape.tape= Tape.tape[:(Tape.cursor)] + value + Tape.tape[(Tape.cursor+1):]
         return 
     
+    @staticmethod
     def shift(value):
+        """
+        Двигает курсор.
+        """
         match value:
             case Shift.STAY:
                 return
@@ -167,7 +192,11 @@ class Tape:
                     Tape.end = len(Tape.tape)
                 return
     
+    @staticmethod
     def run():
+        """
+        Запускает програмный цикл.
+        """
         print()
         print()
         print()
@@ -183,20 +212,26 @@ class Tape:
                 print(Tape.printer_string)
             else:
                 print(Tape.tape.strip('x'))
-            Tape.reset()
         except KeyboardInterrupt:  
             print(Tape.tape.strip('x'))
-            Tape.reset()
-    
+
+    @staticmethod
     def cls():
+        """
+        Очищает пространство работы.
+        """
         sys.stdout.write('\033[F')
-        sys.stdout.write('\033[K')  
+        sys.stdout.write('\033[K')
         sys.stdout.write('\033[F')
         sys.stdout.write('\033[K')
         sys.stdout.write('\033[F')
         sys.stdout.write('\033[K')
     
+    @staticmethod
     def print_tape():
+        """
+        Выводит ленту.
+        """
         Tape.cursor_pos = Tape.cursor - Tape.start
         if Tape.cursor_pos == 1 and Tape.cursor != 1:
             Tape.start = max(0, Tape.start - 1)
@@ -207,17 +242,21 @@ class Tape:
         visible_tape = Tape.tape[Tape.start:Tape.end]
 
         Tape.cls()
-        print(visible_tape + f'\n' + ' '*Tape.cursor_pos + '^' + f'\nPress Ctrl+C to stop. Pos: {Tape.cursor} Function: {Tape.current_function.index}')
+        print(visible_tape + '\n' + ' '*Tape.cursor_pos + '^' + f'\nPress Ctrl+C to stop. Pos: {Tape.cursor} Function: {Tape.current_function.index}')
 
+    @staticmethod
     def printer():
+        """
+        Преобразует ленту, заканчивает программу и выводит результат.
+        """
         output = ''
         text = Tape.tape.strip('x').split('x')
         binaries = []
         for char in text:
             if all(c in '01' for c in char):
                 binaries.append(char)
-        for i in range(len(binaries)):
-            binaries[i] = int(binaries[i], 2)
+        for i, char in enumerate(binaries):
+            binaries[i] = int(char, 2)
         for num in binaries:
             output += Tape.char_table[num]
         Tape.run_flag = False
